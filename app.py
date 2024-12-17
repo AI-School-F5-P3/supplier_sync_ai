@@ -19,11 +19,11 @@ load_dotenv()
 class DatabaseManager:
     def __init__(self):
         self.db_params = {
-            'dbname': os.getenv('DB_NAME', DB_NAME),
-            'user': os.getenv('DB_USER', 'postgres'),
-            'password': os.getenv('DB_PASSWORD', ''),
-            'host': os.getenv('DB_HOST', 'localhost'),
-            'port': os.getenv('DB_PORT', '5432')
+            'dbname': os.getenv('DB_NAME'),
+            'user': os.getenv('DB_USER'),
+            'password': os.getenv('DB_PASSWORD'),
+            'host': os.getenv('DB_HOST'),
+            'port': os.getenv('DB_PORT')
         }
         self.create_tables()
 
@@ -92,19 +92,28 @@ class DatabaseManager:
                 # Insert invoice
                 cur.execute("""
                     INSERT INTO invoices (
-                        supplier_id, invoice_number, file_name, file_content, 
-                        date, total_amount, tax_amount, supplier_name
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        supplier_id, supplier_name, invoice_number, file_name, file_content, 
+                        date, due_date, currency, subtotal_amount, total_amount,
+                            payment_terms, notes, tax_amount, bill_to, send_to
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     supplier_id, 
+                    invoice_data.supplier_name,
                     invoice_data.invoice_number, 
                     original_filename, 
                     file_content,
-                    invoice_data.date, 
+                    invoice_data.issue_date, 
+                    invoice_data.expiration_date,
+                    invoice_data.currency,
+                    invoice_data.subtotal_amount,
                     invoice_data.total_amount, 
+                    invoice_data.payment_terms,
+                    invoice_data.notes,                    
                     invoice_data.tax_amount,
-                    invoice_data.supplier_name
+                    invoice_data.bill_to,
+                    invoice_data.sent_to,
+
                 ))
                 
                 invoice_id = cur.fetchone()['id']
@@ -123,19 +132,20 @@ class DatabaseManager:
                     INSERT INTO safety_documents (
                         supplier_id, document_type, file_name, file_content, 
                         issue_date, expiration_date, issuing_authority, 
-                        supplier_name, status
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        supplier_name, status, notes
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id
                 """, (
                     supplier_id, 
-                    safety_doc.document_category or 'Unspecified', 
+                    safety_doc.document_type or 'Unspecified', 
                     original_filename, 
                     file_content,
-                    safety_doc.date, 
+                    safety_doc.issue_date, 
                     safety_doc.expiration_date,
                     safety_doc.issuing_authority,
                     safety_doc.supplier_name,
-                    safety_doc.status or 'active'
+                    safety_doc.status or 'review',
+                    safety_doc.notes
                 ))
                 
                 doc_id = cur.fetchone()['id']
