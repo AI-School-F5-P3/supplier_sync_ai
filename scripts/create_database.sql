@@ -10,21 +10,9 @@ CREATE DATABASE supplier_sync
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1;
 
-
-
 -- Crear extensiones necesarias
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
--- Crear esquema principal
-CREATE SCHEMA IF NOT EXISTS supplier_sync;
-
--- Configurar el path de búsqueda
-SET search_path TO supplier_sync, public;
-
--- Crear tipos enumerados
-CREATE TYPE document_status AS ENUM ('active', 'expired', 'pending_review');
-CREATE TYPE document_type AS ENUM ('invoice', 'safety', 'tax', 'legal');
 
 -- Crear tabla de proveedores
 CREATE TABLE suppliers (
@@ -42,28 +30,13 @@ CREATE TABLE suppliers (
     CONSTRAINT uk_supplier_ein UNIQUE (ein)
 );
 
--- Crear tabla de documentos
-CREATE TABLE documents (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    supplier_id UUID NOT NULL REFERENCES suppliers(id),
-    document_type document_type NOT NULL,
-    file_name VARCHAR(255) NOT NULL,
-    file_path TEXT NOT NULL,
-    mime_type VARCHAR(100),
-    file_size BIGINT,
-    hash_md5 VARCHAR(32),
-    upload_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_document_supplier FOREIGN KEY (supplier_id) 
-        REFERENCES suppliers(id) ON DELETE CASCADE
-);
-
 -- Crear tabla de facturas
 CREATE TABLE invoices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    document_id UUID NOT NULL REFERENCES documents(id),
+    supplier_id UUID NOT NULL REFERENCES suppliers(id),
     invoice_number VARCHAR(100) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_content TEXT,
     date DATE NOT NULL,
     due_date DATE,
     currency VARCHAR(3) DEFAULT 'USD',
@@ -75,33 +48,29 @@ CREATE TABLE invoices (
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_invoice_document FOREIGN KEY (document_id) 
-        REFERENCES documents(id) ON DELETE CASCADE,
-    CONSTRAINT uk_invoice_number UNIQUE (invoice_number, document_id)
+    CONSTRAINT uk_invoice_number UNIQUE (invoice_number, supplier_id)
 );
 
 -- Crear tabla de documentos de seguridad
 CREATE TABLE safety_documents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    document_id UUID NOT NULL REFERENCES documents(id),
+    supplier_id UUID NOT NULL REFERENCES suppliers(id),
     document_type VARCHAR(50) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_content TEXT,
     issue_date DATE,
     expiration_date DATE,
     issuing_authority VARCHAR(255),
-    status document_status DEFAULT 'active',
+    status VARCHAR(20) DEFAULT 'active',
     notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_safety_document FOREIGN KEY (document_id) 
-        REFERENCES documents(id) ON DELETE CASCADE
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Crear índices
 CREATE INDEX idx_supplier_name ON suppliers(supplier_name);
-CREATE INDEX idx_document_type ON documents(document_type);
 CREATE INDEX idx_invoice_number ON invoices(invoice_number);
 CREATE INDEX idx_invoice_date ON invoices(date);
-CREATE INDEX idx_safety_status ON safety_documents(status);
 CREATE INDEX idx_safety_expiration ON safety_documents(expiration_date);
 
 -- Crear función para actualizar timestamp
@@ -119,11 +88,6 @@ CREATE TRIGGER update_supplier_modtime
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_document_modtime
-    BEFORE UPDATE ON documents
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
 CREATE TRIGGER update_invoice_modtime
     BEFORE UPDATE ON invoices
     FOR EACH ROW
@@ -133,39 +97,3 @@ CREATE TRIGGER update_safety_document_modtime
     BEFORE UPDATE ON safety_documents
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
-
--- Crear vistas útiles
-CREATE VIEW v_invoice_summary AS
-SELECT 
-    i.id,
-    i.invoice_number,
-    i.date,
-    i.total_amount,
-    i.status,
-    s.supplier_name,
-    s.ein
-FROM invoices i
-JOIN documents d ON i.document_id = d.id
-JOIN suppliers s ON d.supplier_id = s.id;
-
-CREATE VIEW v_expired_safety_documents AS
-SELECT 
-    sd.id,
-    sd.document_type,
-    sd.expiration_date,
-    s.supplier_name,
-    s.contact_name,
-    s.email
-FROM safety_documents sd
-JOIN documents d ON sd.document_id = d.id
-JOIN suppliers s ON d.supplier_id = s.id
-WHERE sd.expiration_date < CURRENT_DATE
-AND sd.status = 'active';
-
--- Crear roles y permisos básicos
-CREATE ROLE supplier_sync_admin;
-CREATE ROLE supplier_sync_user;
-
--- Asignar permisos
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA supplier_sync TO supplier_sync_admin;
-GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA supplier_sync TO supplier_sync_user;

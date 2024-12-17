@@ -12,7 +12,7 @@ import uuid
 import shutil
 
 # Configurar Faker para datos en inglés
-fake = Faker(['en_EN'])
+fake = Faker(['en_US'])
 
 def create_database():
     """Crear la base de datos y las tablas"""
