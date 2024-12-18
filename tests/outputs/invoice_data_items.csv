@@ -1,0 +1,5 @@
+description,quantity,unit_price,total
+"Description Quantity Unit Price Total
+
+Product A",10,$50.00,$500.00
+Product B,5,$100.00,$500.00

@@ -1,0 +1,27 @@
+{
+    "letterhead": "INVOICE\n\nSupplier Name: ABC Corporation\n\nSupplier Tax ID: 123456789\n\nBill To: XYZ Enterprises\n\nSend To: 456 Main St, Springfield",
+    "items": [
+        {
+            "description": "Description Quantity Unit Price Total\n\nProduct A",
+            "quantity": "10",
+            "unit_price": "$50.00",
+            "total": "$500.00"
+        },
+        {
+            "description": "Product B",
+            "quantity": "5",
+            "unit_price": "$100.00",
+            "total": "$500.00"
+        }
+    ],
+    "invoice_number": null,
+    "date": null,
+    "due_date": null,
+    "expiration_date": null,
+    "po_number": "PO-987654",
+    "total": null,
+    "subtotal": null,
+    "tax": null,
+    "payment_terms": "Net 30",
+    "notes": "Thank you for your business. Please remit payment by the due date.\n\nPage 1"
+}

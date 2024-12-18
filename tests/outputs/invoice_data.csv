@@ -1,0 +1,12 @@
+letterhead,invoice_number,date,due_date,expiration_date,po_number,bill_to,ship_to,subtotal,tax,total,payment_terms,notes
+"INVOICE
+
+Supplier Name: ABC Corporation
+
+Supplier Tax ID: 123456789
+
+Bill To: XYZ Enterprises
+
+Send To: 456 Main St, Springfield",,,,,PO-987654,,,,,,Net 30,"Thank you for your business. Please remit payment by the due date.
+
+Page 1"
