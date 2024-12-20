@@ -8,7 +8,7 @@ Sistema de gestión inteligente de documentos de proveedores que utiliza OCR y p
 supplier_sync/
 │
 ├── docs/                      # Documentación del proyecto
-│   └── api_docs.md           # Documentación de la API
+│   └── briefings              # Briefing del Proyecto
 │
 ├── scripts/                   # Scripts útiles
 │   ├── create_database.py    # Script para crear la base de datos
