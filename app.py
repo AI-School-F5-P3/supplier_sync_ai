@@ -1,361 +1,161 @@
-import sys
-import subprocess
-import os
-from pathlib import Path
 import streamlit as st
-import psycopg2
-from psycopg2.extras import DictCursor
+import os
 import tempfile
-from datetime import datetime
-from typing import Dict, Any
-from dotenv import load_dotenv
+from src.core.invoice_extraction import extract_invoice_data, export_data_to_json, export_data_to_csv
+import pandas as pd
+import shutil
 
-# Import the updated DocumentProcessor
-from src.core.document_processor import DocumentProcessor, InvoiceData, SafetyDocumentData
+st.set_page_config(page_title="Invoice Data Extractor", layout="wide")
 
-# Load environment variables
-load_dotenv()
+st.title("Invoice Data Extractor")
 
-class DatabaseManager:
-    def __init__(self):
-        self.db_params = {
-            'dbname': os.getenv('DB_NAME'),
-            'user': os.getenv('DB_USER'),
-            'password': os.getenv('DB_PASSWORD'),
-            'host': os.getenv('DB_HOST'),
-            'port': os.getenv('DB_PORT')
-        }
-        self.create_tables()
-
-    def get_connection(self):
-        return psycopg2.connect(**self.db_params)
-
-    def create_tables(self):
-        """Ensure necessary tables exist when app starts"""
-        try:
-            with self.get_connection() as conn:
-                with conn.cursor() as cur:
-                    # Verify if tables exist
-                    cur.execute("""
-                        SELECT EXISTS (
-                            SELECT FROM information_schema.tables 
-                            WHERE table_schema = 'public'
-                            AND table_name = 'suppliers'
-                        )
-                    """)
-                    tables_exist = cur.fetchone()[0]
-                    
-                    if not tables_exist:
-                        # If tables don't exist, run create_database.py
-                        script_path = os.path.join(
-                            os.path.dirname(os.path.abspath(__file__)), 
-                            'scripts', 
-                            'create_database.py'
-                        )
-                        subprocess.run([sys.executable, script_path], check=True)
-                        print("Database tables created successfully")
-                    else:
-                        print("Database tables already exist")
-        except Exception as e:
-            print(f"Error checking/creating tables: {str(e)}")
-            raise
-
-    def get_or_create_supplier(self, supplier_name):
-        """Get existing supplier or create a new one"""
-        with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cur:
-                # First, try to find existing supplier
-                cur.execute("SELECT id FROM suppliers WHERE supplier_name = %s", (supplier_name,))
-                result = cur.fetchone()
-                
-                if result:
-                    return result['id']
-                
-                # If not found, create new supplier
-                cur.execute("""
-                    INSERT INTO suppliers (supplier_name) 
-                    VALUES (%s) 
-                    RETURNING id
-                """, (supplier_name,))
-                
-                supplier_id = cur.fetchone()['id']
-                conn.commit()
-                return supplier_id
-
-    def save_invoice(self, invoice_data: InvoiceData, original_filename: str, file_content: str):
-        """Save invoice to database"""
-        with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cur:
-                # Get or create supplier
-                supplier_id = self.get_or_create_supplier(invoice_data.supplier_name)
-
-                # Insert invoice
-                cur.execute("""
-                    INSERT INTO invoices (
-                        supplier_id, supplier_name, invoice_number, file_name, file_content, 
-                        date, due_date, currency, subtotal_amount, total_amount,
-                            payment_terms, notes, tax_amount, bill_to, send_to
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
-                """, (
-                    supplier_id, 
-                    invoice_data.supplier_name,
-                    invoice_data.invoice_number, 
-                    original_filename, 
-                    file_content,
-                    invoice_data.issue_date, 
-                    invoice_data.expiration_date,
-                    invoice_data.currency,
-                    invoice_data.subtotal_amount,
-                    invoice_data.total_amount, 
-                    invoice_data.payment_terms,
-                    invoice_data.notes,                    
-                    invoice_data.tax_amount,
-                    invoice_data.bill_to,
-                    invoice_data.sent_to,
-
-                ))
-                
-                invoice_id = cur.fetchone()['id']
-                conn.commit()
-                return invoice_id
-
-    def save_safety_document(self, safety_doc: SafetyDocumentData, original_filename: str, file_content: str):
-        """Save safety document to database"""
-        with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cur:
-                # Get or create supplier
-                supplier_id = self.get_or_create_supplier(safety_doc.supplier_name)
-
-                # Insert safety document
-                cur.execute("""
-                    INSERT INTO safety_documents (
-                        supplier_id, document_type, file_name, file_content, 
-                        issue_date, expiration_date, issuing_authority, 
-                        supplier_name, status, notes
-                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id
-                """, (
-                    supplier_id, 
-                    safety_doc.document_type or 'Unspecified', 
-                    original_filename, 
-                    file_content,
-                    safety_doc.issue_date, 
-                    safety_doc.expiration_date,
-                    safety_doc.issuing_authority,
-                    safety_doc.supplier_name,
-                    safety_doc.status or 'review',
-                    safety_doc.notes
-                ))
-                
-                doc_id = cur.fetchone()['id']
-                conn.commit()
-                return doc_id
-
-    def get_all_invoices(self):
-        """Retrieve all invoices"""
-        with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cur:
-                cur.execute("""
-                    SELECT * FROM invoices
-                    ORDER BY date DESC
-                """)
-                return cur.fetchall()
-
-    def get_all_safety_documents(self):
-        """Retrieve all safety documents"""
-        with self.get_connection() as conn:
-            with conn.cursor(cursor_factory=DictCursor) as cur:
-                cur.execute("""
-                    SELECT * FROM safety_documents
-                    ORDER BY issue_date DESC
-                """)
-                return cur.fetchall()
-
-def initialize_session_state():
-    """Initialize session state variables"""
-    if 'processor' not in st.session_state:
-        st.session_state.processor = DocumentProcessor()
-    if 'db' not in st.session_state:
-        st.session_state.db = DatabaseManager()
-
-def main():
-    st.title("SupplierSync AI")
-    initialize_session_state()
-
-    # Sidebar for navigation
-    st.sidebar.title("Navigation")
-    page = st.sidebar.radio("Go to", ["Process Documents", "View Records"])
-
-    if page == "Process Documents":
-        show_upload_page()
-    else:
-        show_records_page()
-
-def show_upload_page():
-    st.header("Process Documents")
+def validate_uploaded_file(uploaded_file):
+    """Validates the uploaded file content"""
+    if uploaded_file.size == 0:
+        raise ValueError("El archivo subido está vacío")
     
-    # Document type selector
-    doc_type = st.selectbox(
-        "Document Type",
-        ["Invoice", "Safety Document"]
-    )
+    if uploaded_file.size > 10 * 1024 * 1024:  # 10MB limit
+        raise ValueError("El archivo es demasiado grande. Por favor, suba un archivo menor a 10MB")
     
-    uploaded_file = st.file_uploader("Upload document", type=["pdf", "png", "jpg", "jpeg"])
-    
-    if uploaded_file is not None:
-        # Create temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=f'.{uploaded_file.name.split(".")[-1]}') as tmp_file:
-            tmp_file.write(uploaded_file.getvalue())
-            tmp_path = tmp_file.name
+    return True
 
-        try:
-            if doc_type == "Invoice":
-                process_invoice(tmp_path, uploaded_file.name)
-            else:
-                process_safety_document(tmp_path, uploaded_file.name)
-                
-        finally:
-            os.unlink(tmp_path)  # Delete temporary file
-
-def process_invoice(file_path: str, original_filename: str):
-    """Process and save invoice"""
-    with st.spinner('Processing invoice...'):
-        # Extract text from document
-        text = st.session_state.processor.extract_text_from_pdf(file_path)
-        
-        # Extract invoice data
-        invoice_data = st.session_state.processor.extract_invoice_data(text)
-        
-        # Show extracted data and allow editing
-        with st.form("invoice_form"):
-            st.write("Extracted Invoice Data (you can edit if needed):")
-            invoice_data.supplier_name = st.text_input("Supplier Name", value=invoice_data.supplier_name or "")
-            invoice_data.invoice_number = st.text_input("Invoice Number", value=invoice_data.invoice_number or "")
-            invoice_data.date = st.date_input("Date", value=datetime.strptime(invoice_data.date, '%Y-%m-%d') if invoice_data.date else datetime.now())
-            invoice_data.total_amount = st.number_input("Total Amount", value=invoice_data.total_amount or 0.0)
-            invoice_data.tax_amount = st.number_input("Tax Amount", value=invoice_data.tax_amount or 0.0)
+def save_uploaded_file(uploaded_file):
+    """Safely saves the uploaded file to a temporary location"""
+    try:
+        # Create a temporary directory that will be cleaned up automatically
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Create full path for the temporary file
+            file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+            temp_path = os.path.join(tmp_dir, f"invoice{file_extension}")
             
-            submitted = st.form_submit_button("Save")
+            # Save uploaded file content
+            with open(temp_path, 'wb') as f:
+                # Read in chunks to handle larger files
+                CHUNK_SIZE = 64 * 1024  # 64KB chunks
+                file_content = uploaded_file.getvalue()
+                
+                # Verify we have content
+                if not file_content:
+                    raise ValueError("No se encontró contenido en el archivo subido")
+                
+                # Write content
+                f.write(file_content)
             
-            if submitted:
-                try:
-                    # Convert date to string for database
-                    invoice_data.date = invoice_data.date.strftime('%Y-%m-%d') if isinstance(invoice_data.date, datetime) else invoice_data.date
-                    
-                    # Save to database with scanned content
-                    invoice_id = st.session_state.db.save_invoice(invoice_data, original_filename, text)
-                    st.success(f"Invoice saved successfully with ID: {invoice_id}")
-                except Exception as e:
-                    st.error(f"Error saving invoice: {str(e)}")
+            # Verify the file was written correctly
+            if os.path.getsize(temp_path) == 0:
+                raise ValueError("Error al escribir el contenido del archivo")
+            
+            # Create a copy of the file that will persist beyond the with block
+            final_temp_path = tempfile.mktemp(suffix=file_extension)
+            shutil.copy2(temp_path, final_temp_path)
+            
+            return final_temp_path
+            
+    except Exception as e:
+        raise ValueError(f"Error al guardar el archivo: {str(e)}")
 
-def process_safety_document(file_path: str, original_filename: str):
-    """Process and save safety document"""
-    with st.spinner('Processing safety document...'):
-        # Extract text from document
-        text = st.session_state.processor.extract_text_from_pdf(file_path)
+# File upload - added accepted file types and help text
+uploaded_file = st.file_uploader(
+    "Upload an invoice (PDF or image)",
+    type=['pdf', 'png', 'jpg', 'jpeg'],
+    help="Supported formats: PDF, PNG, JPG, JPEG"
+)
+
+if uploaded_file is not None:
+    try:
+        # Validate uploaded file
+        validate_uploaded_file(uploaded_file)
         
-        # Extract safety document data
-        safety_doc_data = st.session_state.processor.extract_safety_document_data(text)
+        # Save file and get path
+        temp_path = save_uploaded_file(uploaded_file)
+
+        # Extract data
+        with st.spinner('Processing invoice...'):
+            data = extract_invoice_data(temp_path)
+
+        # Display results in two columns
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("General Information")
+            fields = [
+                ('Invoice Number', 'invoice_number'),
+                ('Date', 'date'),
+                ('Due Date', 'due_date'),
+                ('PO Number', 'po_number'),
+                ('Payment Terms', 'payment_terms')
+            ]
+            for label, key in fields:
+                if key in data and data[key]:
+                    st.text_input(label, data[key], disabled=True)
+
+        with col2:
+            st.subheader("Addresses")
+            if data.get('bill_to'):
+                st.text_area("Bill To", data['bill_to'], disabled=True)
+            if data.get('send_to'):
+                st.text_area("Send To", data['send_to'], disabled=True)
+
+        # Display items in a table if present
+        if data.get('items') and len(data['items']) > 0:
+            st.subheader("Items")
+            items_df = pd.DataFrame(data['items'])
+            st.dataframe(items_df, use_container_width=True)
+
+        # Display totals if present
+        col3, col4, col5 = st.columns(3)
+        with col3:
+            if data.get('subtotal'):
+                st.metric("Subtotal", f"${data['subtotal']}")
+        with col4:
+            if data.get('tax'):
+                st.metric("Tax", f"${data['tax']}")
+        with col5:
+            if data.get('total'):
+                st.metric("Total", f"${data['total']}")
+
+        # Export buttons
+        st.subheader("Export Data")
+        col6, col7 = st.columns(2)
         
-        # Show extracted data and allow editing
-        with st.form("safety_doc_form"):
-            st.write("Extracted Safety Document Data (you can edit if needed):")
-            safety_doc_data.supplier_name = st.text_input("Supplier Name", value=safety_doc_data.supplier_name or "")
-            safety_doc_data.document_category = st.selectbox(
-                "Document Category", 
-                ["Compliance", "Safety Certificate", "Quality Assurance", "Other"],
-                index=0 if not safety_doc_data.document_category else 
-                       ["Compliance", "Safety Certificate", "Quality Assurance", "Other"].index(safety_doc_data.document_category)
+        # JSON export
+        with col6:
+            json_data = export_data_to_json(data, None)  # Modified to return string
+            st.download_button(
+                label="Download JSON",
+                data=json_data,
+                file_name="invoice_data.json",
+                mime="application/json"
             )
-            safety_doc_data.date = st.date_input(
-                "Issue Date", 
-                value=datetime.strptime(safety_doc_data.date, '%Y-%m-%d') if safety_doc_data.date else datetime.now()
+        
+        # CSV export
+        with col7:
+            csv_data = export_data_to_csv(data, None)  # Modified to return string
+            st.download_button(
+                label="Download CSV",
+                data=csv_data,
+                file_name="invoice_data.csv",
+                mime="text/csv"
             )
-            safety_doc_data.expiration_date = st.date_input(
-                "Expiration Date", 
-                value=datetime.strptime(safety_doc_data.expiration_date, '%Y-%m-%d') if safety_doc_data.expiration_date else None
-            )
-            safety_doc_data.issuing_authority = st.text_input("Issuing Authority", value=safety_doc_data.issuing_authority or "")
-            safety_doc_data.status = st.selectbox(
-                "Status", 
-                ["active", "expired", "pending"],
-                index=0 if not safety_doc_data.status else ["active", "expired", "pending"].index(safety_doc_data.status)
-            )
-            
-            submitted = st.form_submit_button("Save")
-            
-            if submitted:
-                try:
-                    # Convert dates to string for database
-                    safety_doc_data.date = safety_doc_data.date.strftime('%Y-%m-%d') if isinstance(safety_doc_data.date, datetime) else safety_doc_data.date
-                    safety_doc_data.expiration_date = safety_doc_data.expiration_date.strftime('%Y-%m-%d') if isinstance(safety_doc_data.expiration_date, datetime) else safety_doc_data.expiration_date
-                    
-                    # Save to database with scanned content
-                    doc_id = st.session_state.db.save_safety_document(safety_doc_data, original_filename, text)
-                    st.success(f"Safety document saved successfully with ID: {doc_id}")
-                except Exception as e:
-                    st.error(f"Error saving safety document: {str(e)}")
 
-def show_records_page():
-    """Show records page"""
-    st.header("Records")
-    
-    # Tabs for different document types
-    tab1, tab2 = st.tabs(["Invoices", "Safety Documents"])
-    
-    with tab1:
-        show_invoices_table()
-    
-    with tab2:
-        show_safety_documents_table()
+    except Exception as e:
+        st.error(f"Error processing invoice: {str(e)}")
+        st.info("Please make sure your file is not corrupted and try uploading again.")
 
-def show_invoices_table():
-    """Show invoices table"""
-    invoices = st.session_state.db.get_all_invoices()
-    
-    if not invoices:
-        st.write("No invoices registered")
-        return
-    
-    # Convert data for table display
-    invoice_data = []
-    for inv in invoices:
-        invoice_data.append({
-            "ID": inv['id'],
-            "Supplier": inv['supplier_name'],
-            "Invoice Number": inv['invoice_number'],
-            "Date": inv['date'].strftime('%Y-%m-%d') if inv['date'] else '',
-            "Total Amount": f"${inv['total_amount']:,.2f}",
-            "Tax": f"${inv['tax_amount']:,.2f}",
-            "File": inv['file_name']
-        })
-    
-    st.table(invoice_data)
+    finally:
+        # Clean up temporary file
+        if 'temp_path' in locals():
+            try:
+                os.unlink(temp_path)
+            except Exception as e:
+                st.warning(f"Could not delete temporary file: {str(e)}")
 
-def show_safety_documents_table():
-    """Show safety documents table"""
-    safety_docs = st.session_state.db.get_all_safety_documents()
-    
-    if not safety_docs:
-        st.write("No safety documents registered")
-        return
-    
-    # Convert data for table display
-    safety_doc_data = []
-    for doc in safety_docs:
-        safety_doc_data.append({
-            "ID": doc['id'],
-            "Supplier": doc['supplier_name'],
-            "Document Type": doc['document_type'],
-            "Issue Date": doc['issue_date'].strftime('%Y-%m-%d') if doc['issue_date'] else '',
-            "Expiration Date": doc['expiration_date'].strftime('%Y-%m-%d') if doc['expiration_date'] else '',
-            "Issuing Authority": doc['issuing_authority'],
-            "Status": doc['status'],
-            "File": doc['file_name']
-        })
-    
-    st.table(safety_doc_data)
+st.sidebar.markdown("""
+## Instructions
+1. Upload an invoice file (PDF or image format)
+2. Wait for the file to be processed
+3. Review the extracted data
+4. Export results in JSON or CSV format
 
-if __name__ == "__main__":
-    main()
+**Note**: All data is processed locally and no information is stored.
+""")

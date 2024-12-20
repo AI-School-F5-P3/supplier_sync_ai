@@ -7,7 +7,7 @@ class InvoicePDF(FPDF):
     def header(self):
         """Encabezado de la factura."""
         self.set_font('Arial', 'B', 12)
-        self.cell(0, 10, 'INVOICE', align='C', ln=True)
+        self.cell(0, 10, 'INVOICE Nº 28922', align='C', ln=True)
         self.ln(5)
     
     def footer(self):
@@ -62,14 +62,14 @@ class InvoicePDF(FPDF):
 
 # Datos de la factura de ejemplo
 invoice_data = {
-    'supplier_name': 'ABC Corporation',
-    'supplier_tax_id': '123456789',
-    'bill_to': 'XYZ Enterprises',
+    'supplier_name': 'Reddingtong Corporation',
+    'supplier_tax_id': '23342343',
+    'bill_to': 'Belmont Enterprises',
     'send_to': '456 Main St, Springfield',
     'issue_date': '2024-02-12',
-    'expiration_date': '2024-03-12',
-    'payment_terms': 'Net 30',
-    'purchase_order': 'PO-987654',
+    'expiration_date': '2026-03-12',
+    'payment_terms': 'Net 45',
+    'purchase_order': 'ABD22222',
     'items': [
         {'description': 'Product A', 'quantity': 10, 'unit_price': 50.00, 'total': 500.00},
         {'description': 'Product B', 'quantity': 5, 'unit_price': 100.00, 'total': 500.00},
@@ -83,7 +83,7 @@ pdf.add_page()
 pdf.invoice_body(invoice_data)
 
 # Guardar la factura como archivo PDF
-pdf_output_path = 'scripts/generated_invoices/invoice_example.pdf'
+pdf_output_path = 'scripts/generated_invoices/invoice_example2.pdf'
 pdf.output(pdf_output_path)
 
 # Convertir el PDF en una imagen PNG
