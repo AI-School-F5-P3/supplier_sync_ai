@@ -25,7 +25,7 @@ supplier_sync/
 ├── tests/                      # Tests
 │   ├── __init__.py
 │   ├── data_test/              #Documentación de testing    
-│   ├──outputs/                 #Output de la app.py en formato json y csv
+│   ├── outputs/                #Output de la app.py en formato json y csv
 │   └── extraction_test.py      #Archivo de prueba del funcionamiento pytesseract ocr  
 │
 ├── data/                # Datos de ejemplo y recursos
