@@ -20,21 +20,21 @@ supplier_sync/
 │   │
 │   ├── core/                   # Lógica central
 │   │   ├── __init__.py
-│   │   ├── invoice_extraction.py
+│   │   └── invoice_extraction.py
 │   │
 ├── tests/                      # Tests
 │   ├── __init__.py
 │   ├── data_test/              #Documentación de testing    
-│   └── outputs/                #output de la app.py en formato json y csv
-│   └── extraction_test.py      #archivo de prueba del funcionamiento pytesseract ocr  
+│   ├──outputs/                 #Output de la app.py en formato json y csv
+│   └── extraction_test.py      #Archivo de prueba del funcionamiento pytesseract ocr  
 │
 ├── data/                # Datos de ejemplo y recursos
 │   ├── sample_invoices/
 │   └── sample_safety_docs/
 │
 ├── requirements.txt     # Dependencias del proyecto
-├── .env.example        # Ejemplo de variables de entorno
-└── README.md           # Documentación principal
+├── .env                 # Ejemplo de variables de entorno
+└── README.md            # Documentación principal
 ```
 
 ## Requisitos
