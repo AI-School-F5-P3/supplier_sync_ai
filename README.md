@@ -7,44 +7,32 @@ Sistema de gestión inteligente de documentos de proveedores que utiliza OCR y p
 ``` 
 supplier_sync/
 │
-├── docs/                      # Documentación del proyecto
-│   └── briefings              # Briefing del Proyecto
+├── docs/                                               # Documentación del proyecto
+│   └── SupplierSyncAI_english_version.odt              # Briefing del Proyecto
 │
 ├── scripts/                   # Scripts útiles
-│   ├── create_database.py    # Script para crear la base de datos
-│   ├── create_database.sql   # SQL para crear la base de datos
-│   └── generate_test_data.py # Generador de datos de prueba
+│   ├── generated_invoices/    # Facturas generadas para testing
+│   ├── templates/             # Templates para la generación de documentos de testing
+│   └── invoice_generator.py   # Generador automatizado de facturas de testing
 │
-├── src/                      # Código fuente principal
+├── src/                        # Código fuente principal
 │   ├── __init__.py
-│   ├── config/              # Configuración
-│   │   ├── __init__.py
-│   │   └── settings.py      # Configuraciones del proyecto
 │   │
-│   ├── core/               # Lógica central
+│   ├── core/                   # Lógica central
 │   │   ├── __init__.py
-│   │   ├── document_processor.py
-│   │   └── database.py
+│   │   ├── invoice_extraction.py
 │   │
-│   ├── models/            # Modelos de datos
-│   │   ├── __init__.py
-│   │   └── invoice.py
-│   │
-│   └── utils/            # Utilidades
-│       ├── __init__.py
-│       └── helpers.py
-│
-├── tests/                # Tests
+├── tests/                      # Tests
 │   ├── __init__.py
-│   ├── test_document_processor.py
-│   └── test_database.py
+│   ├── data_test/              #Documentación de testing    
+│   └── outputs/                #output de la app.py en formato json y csv
+│   └── extraction_test.py      #archivo de prueba del funcionamiento pytesseract ocr  
 │
 ├── data/                # Datos de ejemplo y recursos
 │   ├── sample_invoices/
 │   └── sample_safety_docs/
 │
 ├── requirements.txt     # Dependencias del proyecto
-├── setup.py            # Configuración de instalación
 ├── .env.example        # Ejemplo de variables de entorno
 └── README.md           # Documentación principal
 ```
@@ -86,7 +74,7 @@ python scripts/create_database.py
 
 1. Iniciar la aplicación:
 ```bash
-streamlit run src/app.py
+streamlit run app.py
 ```
 
 2. Acceder a la aplicación web en `http://localhost:8501`
@@ -96,9 +84,9 @@ streamlit run src/app.py
 - Procesamiento automático de facturas mediante OCR
 - Extracción inteligente de datos de documentos
 - Interfaz web intuitiva
-- Gestión de documentos de seguridad
+- Gestión de documentos de seguridad - en progreso
 - Exportación de datos en múltiples formatos
-- Sistema de búsqueda avanzado
+- Sistema de búsqueda avanzado - en progreso
 
 ## Desarrollo
 
