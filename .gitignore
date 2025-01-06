@@ -1,71 +1,71 @@
-# Archivos de sistema (MacOS, Windows)
-.DS_Store
-Thumbs.db
+# System files (MacOS, Windows)  
+.DS_Store  
+Thumbs.db  
 
-# Archivos de logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Log files  
+logs/  
+*.log  
+npm-debug.log*  
+yarn-debug.log*  
+yarn-error.log*  
 
-# Dependencias de Node.js
-node_modules/
+# Node.js dependencies  
+node_modules/  
 
-# Entornos virtuales de Python
-docker/.env
-venv/
-.env/
-__pycache__/
-*.py[cod]
+# Python virtual environments  
+docker/.env  
+venv/  
+.env/  
+__pycache__/  
+*.py[cod]  
 
-# Archivos de configuración de entornos
-.env
-.env.local
-*.env.*
+# Environment configuration files  
+.env  
+.env.local  
+*.env.*  
 
-# Archivos de compilación
-dist/
-build/
-out/
+# Build files  
+dist/  
+build/  
+out/  
 
-# Archivos de empaquetado
-*.zip
-*.tar.gz
+# Packaged files  
+*.zip  
+*.tar.gz  
 
-# IDEs y editores
-.idea/
-.vscode/
-*.sublime-workspace
-*.sublime-project
+# IDEs and editors  
+.idea/  
+.vscode/  
+*.sublime-workspace  
+*.sublime-project  
 
-# Archivos de configuración de sistemas de control de versiones
-*.orig
-*.rej
+# Version control system configuration files  
+*.orig  
+*.rej  
 
-# Archivos temporales
-*.swp
-*.bak
-*.tmp
-*.old
-*.backup
+# Temporary files  
+*.swp  
+*.bak  
+*.tmp  
+*.old  
+*.backup  
 
-# Archivos de base de datos locales
-*.sqlite3
+# Local database files  
+*.sqlite3  
 
-# Archivos generados por pruebas
-coverage/
-*.cover
-*.lcov
-*.test-results/
+# Test-generated files  
+coverage/  
+*.cover  
+*.lcov  
+*.test-results/  
 
-# Archivos de sistemas específicos
-*.class
-*.o
-*.out
-*.so
+# System-specific files  
+*.class  
+*.o  
+*.out  
+*.so  
 
-# Otros archivos innecesarios
-*.~*
-*.lock
-data/
+# Other unnecessary files  
+*.~*  
+*.lock  
+data/  
