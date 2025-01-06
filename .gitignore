@@ -68,3 +68,4 @@ coverage/
 # Otros archivos innecesarios
 *.~*
 *.lock
+data/
