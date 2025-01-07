@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Times New Roman', serif; margin: 30px; }
+        .osha-header { 
+            border: 2px solid black; 
+            padding: 15px;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        .form-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            font-size: 11px;
+        }
+        .column-header {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="osha-header">
+        <img src="/api/placeholder/100/50" alt="OSHA Logo"/>
+        <div class="form-title">OSHA Form 300 (Rev. 01/2024)</div>
+        <div>Log of Work-Related Injuries and Illnesses</div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <strong>Establishment Name:</strong> ChemTech Industries<br>
+        <strong>City:</strong> Houston <strong>State:</strong> TX<br>
+        <strong>Year:</strong> 2025<br>
+        <strong>Industry Description:</strong> Chemical Manufacturing
+    </div>
+
+    <table>
+        <tr>
+            <th class="column-header" rowspan="2">Case No.</th>
+            <th class="column-header" colspan="2">Employee</th>
+            <th class="column-header" colspan="2">The Case</th>
+            <th class="column-header" colspan="4">Classification</th>
+            <th class="column-header" colspan="2">Days</th>
+        </tr>
+        <tr>
+            <th class="column-header">Name</th>
+            <th class="column-header">Job Title</th>
+            <th class="column-header">Date</th>
+            <th class="column-header">Where and How</th>
+            <th class="column-header">(A)</th>
+            <th class="column-header">(B)</th>
+            <th class="column-header">(C)</th>
+            <th class="column-header">(D)</th>
+            <th class="column-header">Away</th>
+            <th class="column-header">Restricted</th>
+        </tr>
+        <tr>
+            <td>2025-001</td>
+            <td>Martinez, A.</td>
+            <td>Process Operator</td>
+            <td>01/08/25</td>
+            <td>Chemical splash during tank transfer operation</td>
+            <td></td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td>2</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>2025-002</td>
+            <td>Johnson, P.</td>
+            <td>Lab Technician</td>
+            <td>01/10/25</td>
+            <td>Exposure to fumes in testing area</td>
+            <td></td>
+            <td></td>
+            <td>X</td>
+            <td></td>
+            <td>0</td>
+            <td>1</td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .acord-header {
+            text-align: center;
+            border: 2px solid black;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .section {
+            border: 1px solid black;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .coverage-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .coverage-table th, .coverage-table td {
+            border: 1px solid black;
+            padding: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="acord-header">
+        <div class="logo">ACORD®</div>
+        <div>CERTIFICATE OF LIABILITY INSURANCE</div>
+        <div>DATE (MM/DD/YYYY)<br>01/07/2025</div>
+    </div>
+
+    <div class="section">
+        <div class="grid">
+            <div>
+                <strong>PRODUCER</strong><br>
+                Insurance Broker Inc.<br>
+                123 Broker Street<br>
+                New York, NY 10001<br>
+                License #: BR-789456
+            </div>
+            <div>
+                <strong>INSURED</strong><br>
+                Manufacturing Corp<br>
+                456 Industrial Ave<br>
+                Detroit, MI 48201
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <strong>COVERAGES</strong>
+        <table class="coverage-table">
+            <tr>
+                <th>TYPE OF INSURANCE</th>
+                <th>POLICY NUMBER</th>
+                <th>LIMITS</th>
+            </tr>
+            <tr>
+                <td>COMMERCIAL GENERAL LIABILITY</td>
+                <td>GLI-987654321</td>
+                <td>
+                    EACH OCCURRENCE: $1,000,000<br>
+                    DAMAGE TO PREMISES: $100,000<br>
+                    MED EXP: $5,000<br>
+                    PERSONAL & ADV INJURY: $1,000,000<br>
+                    GENERAL AGGREGATE: $2,000,000
+                </td>
+            </tr>
+            <tr>
+                <td>WORKERS COMPENSATION</td>
+                <td>WC-123456789</td>
+                <td>
+                    E.L. EACH ACCIDENT: $1,000,000<br>
+                    E.L. DISEASE-EA EMPLOYEE: $1,000,000<br>
+                    E.L. DISEASE-POLICY LIMIT: $1,000,000
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <strong>CERTIFICATE HOLDER</strong><br>
+        Project Owner LLC<br>
+        789 Business Plaza<br>
+        Chicago, IL 60601
+    </div>
+</body>
+</html>

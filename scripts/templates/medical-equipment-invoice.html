@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; margin: 40px; }
+        .header { color: #006699; text-align: center; }
+        .watermark { position: absolute; opacity: 0.1; transform: rotate(-45deg); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>MedTech Supplies Inc.</h1>
+        <p>789 Healthcare Plaza, Houston, TX 77001</p>
+        <h2>INVOICE</h2>
+    </div>
+
+    <div class="invoice-details">
+        <p><strong>Invoice #:</strong> MT-2025-0107</p>
+        <p><strong>Date:</strong> January 7, 2025</p>
+        <p><strong>Customer:</strong> Central Hospital</p>
+    </div>
+
+    <table>
+        <tr>
+            <th>Item Code</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+        </tr>
+        <tr>
+            <td>MRI-350</td>
+            <td>MRI Machine Maintenance Kit</td>
+            <td>1</td>
+            <td>$15,000.00</td>
+            <td>$15,000.00</td>
+        </tr>
+        <tr>
+            <td>XR-100</td>
+            <td>X-Ray Sensor Array</td>
+            <td>2</td>
+            <td>$8,500.00</td>
+            <td>$17,000.00</td>
+        </tr>
+    </table>
+
+    <div class="total">
+        <p><strong>Subtotal:</strong> $32,000.00</p>
+        <p><strong>Tax (6.25%):</strong> $2,000.00</p>
+        <p><strong>Total:</strong> $34,000.00</p>
+    </div>
+</body>
+</html>
