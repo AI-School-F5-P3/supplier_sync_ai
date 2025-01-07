@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Times New Roman', serif; margin: 30px; }
+        .osha-header { 
+            border: 2px solid black; 
+            padding: 10px;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        .form-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            font-size: 12px;
+        }
+        .column-header {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="osha-header">
+        <img src="/api/placeholder/100/50" alt="OSHA Logo"/>
+        <div class="form-title">OSHA Form 300 (Rev. 01/2024)</div>
+        <div>Log of Work-Related Injuries and Illnesses</div>
+        <div>U.S. Department of Labor - Occupational Safety and Health Administration</div>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <strong>Establishment Name:</strong> Manufacturing Facility #127<br>
+        <strong>Year:</strong> 2025
+    </div>
+
+    <table>
+        <tr>
+            <th class="column-header" rowspan="2">Case No.</th>
+            <th class="column-header" colspan="2">Employee Information</th>
+            <th class="column-header" colspan="2">Case Information</th>
+            <th class="column-header" colspan="4">Classification</th>
+            <th class="column-header" rowspan="2">Days Away</th>
+        </tr>
+        <tr>
+            <th class="column-header">Name</th>
+            <th class="column-header">Job Title</th>
+            <th class="column-header">Date</th>
+            <th class="column-header">Description</th>
+            <th class="column-header">Death</th>
+            <th class="column-header">Lost Time</th>
+            <th class="column-header">Restriction</th>
+            <th class="column-header">Other</th>
+        </tr>
+        <tr>
+            <td>2025-001</td>
+            <td>Johnson, R.</td>
+            <td>Machine Operator</td>
+            <td>01/07/25</td>
+            <td>Laceration to right hand during equipment maintenance</td>
+            <td></td>
+            <td>X</td>
+            <td></td>
+            <td></td>
+            <td>5</td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Public reporting burden for this collection of information is estimated to average 14 minutes per response, including time to review the instruction, search and gather the data needed, and complete and review the collection of information.
+    </div>
+</body>
+</html>
