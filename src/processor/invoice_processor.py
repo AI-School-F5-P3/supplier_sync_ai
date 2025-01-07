@@ -1,6 +1,20 @@
 import re
 from datetime import datetime
 
+# Extraer montos ajustados
+def extract_final_total(text):
+    """
+    Extract the second occurrence of 'Total' (or the last one).
+    """
+    total_matches = list(re.finditer(r'(?:Total|Amount|Sum)[^0-9]*?(\d+\.?\d*)', text, re.IGNORECASE))
+    if len(total_matches) > 1:
+        # Return the value from the last match (the second 'Total')
+        return float(total_matches[-1].group(1).replace(',', ''))
+    elif total_matches:
+        # Return the first match if only one is found
+        return float(total_matches[0].group(1).replace(',', ''))
+    return None
+
 def process_invoice(text):
     """Process invoice documents with enhanced field extraction"""
     data = {
@@ -18,7 +32,7 @@ def process_invoice(text):
     
     # Extract invoice number (multiple patterns)
     invoice_patterns = [
-        r'(?:Invoice|Bill|Receipt).*?[:#]?\s*([A-Z0-9-]+)',
+        r'(?:Invoice|Bill|Receipt|Invoice #).*?[:#]?\s*([A-Z0-9-]+)',
         r'Document\s*(?:No|Number)[.:]?\s*([A-Z0-9-]+)',
         r'TD(\d+)',
         r'No[.:]\s*(\d+)',
@@ -32,9 +46,10 @@ def process_invoice(text):
     
     # Extract dates
     date_patterns = [
-        r'(?:Date|Invoice Date)[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',
-        r'(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})',
-        r'(\d{4}[-/]\d{2}[-/]\d{2})'
+        r'(?:Date|Invoice Date|Due Date)[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})',  # MM/DD/YYYY or MM/DD/YY
+        r'(?:Date|Invoice Date|Due Date)[:\s]*(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})',  # January 7, 2025
+        r'(?:Date|Invoice Date|Due Date)[:\s]*(\d{4}[-/]\d{2}[-/]\d{2})',  # YYYY-MM-DD
+        r'(?:Date|Invoice Date|Due Date)[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{2})'  # M/D/YY
     ]
     
     for pattern in date_patterns:
@@ -42,16 +57,21 @@ def process_invoice(text):
         if match:
             try:
                 date_str = match.group(1)
-                data['date'] = parse_date(date_str)
-                break
+                parsed_date = parse_date(date_str)
+                if 'Due Date' in pattern:
+                    data['due_date'] = parsed_date
+                else:
+                    data['date'] = parsed_date
             except ValueError:
                 continue
     
-    # Extract amounts
+    # Extract total using the new function
+    data['total'] = extract_final_total(text)
+
+    # Extract subtotal and tax as before
     amount_patterns = {
-        'total': r'(?:Total|Amount|Sum)[^0-9]*?(\d+\.?\d*)',
         'subtotal': r'(?:Subtotal|Net)[^0-9]*?(\d+\.?\d*)',
-        'tax': r'(?:Tax|VAT|GST)[^0-9]*?(\d+\.?\d*)'
+        'tax': r'(?:Tax|VAT|GST)[^)]*\)\s*[^0-9]*?(\d+\.?\d*)'  # Look for tax after percentage
     }
     
     for key, pattern in amount_patterns.items():
@@ -100,9 +120,11 @@ def process_invoice(text):
 def parse_date(date_str):
     """Parse date string into standard format"""
     formats = [
-        '%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y',
-        '%d/%m/%y', '%y-%m-%d', '%d-%m-%y',
-        '%d %b %Y', '%d %B %Y'
+        '%B %d, %Y',  # January 7, 2025
+        '%m/%d/%Y', '%m/%d/%y',  # MM/DD/YYYY, MM/DD/YY
+        '%m-%d-%Y', '%m-%d-%y',  # MM-DD-YYYY, MM-DD-YY
+        '%Y-%m-%d',  # YYYY-MM-DD
+        '%d %b %Y', '%d %B %Y'  # 07 Jan 2025, 07 January 2025
     ]
     
     for fmt in formats:

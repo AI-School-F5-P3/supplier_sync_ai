@@ -11,7 +11,7 @@ os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 from PIL import Image
 
 try:
-    imagen = Image.open('tests/test2.png')  # Asegúrate de que esta imagen exista
+    imagen = Image.open('tests/X00016469612.jpg')  # Asegúrate de que esta imagen exista
     texto = pytesseract.image_to_string(imagen)
     print("Texto extraído:", texto)
 except Exception as e:

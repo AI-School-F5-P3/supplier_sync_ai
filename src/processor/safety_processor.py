@@ -28,15 +28,17 @@ def process_safety_doc(text):
             data['document_number'] = match.group(1).strip()
             break
     
-    # Extract dates
-    date_pattern = r'(?:Date|Issued)[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})'
-    expiry_pattern = r'(?:Expiry|Valid Until)[:\s]*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})'
+    # Regex combinada para capturar fechas (formato dd/mm/yyyy o Month dd, yyyy)
+    date_combined_pattern = r'(?:Date|Issued|Date of Completion)[:\s]*((\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|([A-Za-z]+ \d{1,2}, \d{4}))'
+    expiry_combined_pattern = r'(?:Expiry|Valid Until)[:\s]*((\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|([A-Za-z]+ \d{1,2}, \d{4}))'
     
-    date_match = re.search(date_pattern, text, re.IGNORECASE)
+    # Extract date
+    date_match = re.search(date_combined_pattern, text, re.IGNORECASE)
     if date_match:
         data['date'] = parse_date(date_match.group(1))
     
-    expiry_match = re.search(expiry_pattern, text, re.IGNORECASE)
+    # Extract expiry date
+    expiry_match = re.search(expiry_combined_pattern, text, re.IGNORECASE)
     if expiry_match:
         data['expiry_date'] = parse_date(expiry_match.group(1))
     
@@ -70,7 +72,8 @@ def parse_date(date_str):
     """Parse date string into standard format"""
     formats = [
         '%d/%m/%Y', '%Y-%m-%d', '%d-%m-%Y',
-        '%d/%m/%y', '%y-%m-%d', '%d-%m-%y'
+        '%d/%m/%y', '%y-%m-%d', '%d-%m-%y',
+        '%B %d, %Y'  # Para fechas en formato: January 7, 2025
     ]
     
     for fmt in formats:
