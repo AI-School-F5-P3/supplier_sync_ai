@@ -7,34 +7,42 @@ Sistema de gestión inteligente de documentos de proveedores que utiliza OCR y p
 ``` 
 supplier_sync/
 │
-├── docs/                                               # Documentación del proyecto
-│   └── SupplierSyncAI_english_version.odt              # Briefing del Proyecto
+├── app.py                    # Main Streamlit application
+├── requirements.txt          # Project dependencies
 │
-├── scripts/                   # Scripts útiles
-│   ├── generated_invoices/    # Facturas generadas para testing
-│   ├── templates/             # Templates para la generación de documentos de testing
-│   └── invoice_generator.py   # Generador automatizado de facturas de testing
-│
-├── src/                        # Código fuente principal
+├── src/
 │   ├── __init__.py
-│   │
-│   ├── core/                   # Lógica central
+│   ├── processor/
 │   │   ├── __init__.py
-│   │   └── invoice_extraction.py
+│   │   ├── document_processor.py   # DocumentProcessor class
+│   │   ├── invoice_processor.py    # Invoice-specific processing
+│   │   ├── safety_processor.py     # Safety document processing
+│   │   ├── insurance_processor.py  # Insurance document processing
+│   │   └── personal_processor.py   # Personal document processing
 │   │
-├── tests/                      # Tests
-│   ├── __init__.py
-│   ├── data_test/              #Documentación de testing    
-│   ├── outputs/                #Output de la app.py en formato json y csv
-│   └── extraction_test.py      #Archivo de prueba del funcionamiento pytesseract ocr  
+│   └── utils/
+│       ├── __init__.py
+│       ├── image_utils.py          # Image processing utilities
+│       ├── text_utils.py           # Text processing utilities
+│       └── export_utils.py         # Export functionality
 │
-├── data/                # Datos de ejemplo y recursos
+└── tests/                    # Unit tests
+|   ├── __init__.py
+|   └── test_processor.py
+|
+├── docs/                                               # Project documentation
+│   └── SupplierSyncAI_english_version.odt              # Project briefing
+│
+├── data/                # Example data and resources
 │   ├── sample_invoices/
 │   └── sample_safety_docs/
-│
-├── requirements.txt     # Dependencias del proyecto
-├── .env                 # Ejemplo de variables de entorno
-└── README.md            # Documentación principal
+
+├── .gitignore           # Specifies files and directories to be excluded from version control
+├── .env                 # Contains environment-specific configuration variables (e.g., API keys, database credentials)
+├── venv                 # Virtual environment
+└── README.md            # Main documentation
+
+
 ```
 
 ## Requisitos

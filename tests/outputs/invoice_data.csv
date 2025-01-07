@@ -1,9 +1,0 @@
-letterhead,invoice_number,date,due_date,expiration_date,po_number,bill_to,send_to,subtotal,tax,total,payment_terms,notes
-"Supplier Name: ABC Corporation
-Supplier Tax ID: 123456789
-Bill To: XYZ Enterprises
-Send To: 456 Main St, Springfield
-Issue Date: 2024-02-12
-Expiration Date: 2024-03-12
-Payment Terms: Net 30
-Purchase Order: PO-987654",Supplier,2024-02-12,2024-03-12,,PO-987654,XYZ Enterprises,"456 Main St, Springfield",,,,Net 30,Thank you for your business. Please remit payment by the due date.
